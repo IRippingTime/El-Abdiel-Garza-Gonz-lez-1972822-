@@ -1,33 +1,29 @@
-`timescale 1ns / 1ps
+## Clock (100MHz System Clock)
+set_property -dict { PACKAGE_PIN E3    IOSTANDARD LVCMOS33 } [get_ports { clk_100mhz }];
+create_clock -add -name sys_clk_pin -period 10.00 -waveform {0 5} [get_ports { clk_100mhz }];
 
-module udp_hello_tx (
-    input  wire clk_50mhz,  // Reloj principal de la placa
-    input  wire rst_n,      // Reset activo en bajo
-    input  wire btn_send,   // Boton fisico para enviar
-    
-    // Interfaz MII
-    output wire eth_tx_en,  // Habilitador de transmision
-    output wire [3:0] eth_txd, // Datos MII (Nibble)
-    input  wire eth_tx_clk  // Reloj MII de 25 MHz del PHY
-);
+## Ethernet Reference Clock (25 MHz output to PHY)
+set_property -dict { PACKAGE_PIN G18   IOSTANDARD LVCMOS33 } [get_ports { eth_ref_clk }];
 
-    // --- PARAMETROS MAC ---
-    localparam [47:0] MAC_DEST = 48'hAA_BB_CC_DD_EE_FF; // MacBook (Cambiar por real)
-    localparam [47:0] MAC_SRC  = 48'h00_18_3E_02_11_22; // Arty A7
-    localparam [15:0] ETHER_TYPE = 16'h0800; // IPv4
+## Ethernet PHY Reset (Active Low)
+set_property -dict { PACKAGE_PIN C16   IOSTANDARD LVCMOS33 } [get_ports { eth_rstn }];
 
-    // --- REGISTROS DE ESTADO ---
-    reg [2:0]  state;
-    reg [10:0] byte_counter;
-    reg [7:0]  current_byte;
+## Ethernet TX Interface
+set_property -dict { PACKAGE_PIN H16   IOSTANDARD LVCMOS33 } [get_ports { eth_tx_clk }];
+create_clock -add -name eth_tx_clk -period 40.00 -waveform {0 20} [get_ports { eth_tx_clk }];
 
-    // --- REGISTROS MII ---
-    reg [3:0] tx_data_nibble;
-    reg       tx_en_reg;
+set_property -dict { PACKAGE_PIN H15   IOSTANDARD LVCMOS33 } [get_ports { eth_tx_en }];
+set_property -dict { PACKAGE_PIN H14   IOSTANDARD LVCMOS33 } [get_ports { eth_txd[0] }];
+set_property -dict { PACKAGE_PIN J14   IOSTANDARD LVCMOS33 } [get_ports { eth_txd[1] }];
+set_property -dict { PACKAGE_PIN J13   IOSTANDARD LVCMOS33 } [get_ports { eth_txd[2] }];
+set_property -dict { PACKAGE_PIN H17   IOSTANDARD LVCMOS33 } [get_ports { eth_txd[3] }];
 
-    assign eth_txd = tx_data_nibble;
-    assign eth_tx_en = tx_en_reg;
+## Buttons
+set_property -dict { PACKAGE_PIN C2    IOSTANDARD LVCMOS33 } [get_ports { rst_n }]; # Reset Button
+set_property -dict { PACKAGE_PIN D9    IOSTANDARD LVCMOS33 } [get_ports { btn_send }]; # BTN0
 
-    // La logica de la maquina de estados se desarrollara en etapas posteriores.
-
-endmodule
+## LEDs for Debugging
+set_property -dict { PACKAGE_PIN H5    IOSTANDARD LVCMOS33 } [get_ports { led[0] }];
+set_property -dict { PACKAGE_PIN J5    IOSTANDARD LVCMOS33 } [get_ports { led[1] }];
+set_property -dict { PACKAGE_PIN T9    IOSTANDARD LVCMOS33 } [get_ports { led[2] }];
+set_property -dict { PACKAGE_PIN T10   IOSTANDARD LVCMOS33 } [get_ports { led[3] }];
